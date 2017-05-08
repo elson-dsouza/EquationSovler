@@ -4,8 +4,8 @@ import java.util.List;
 
 public abstract class Function extends LazyFunction {
 
-    public Function(String name, int numParams) {
-        super(name, numParams);
+    public Function(String name) {
+        super(name);
     }
 
     public LazyNumber lazyEval(List<LazyNumber> lazyParams) {

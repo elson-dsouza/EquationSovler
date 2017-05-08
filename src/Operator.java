@@ -5,21 +5,21 @@ public abstract class Operator {
     private int precedence;
     private boolean leftAssoc;
 
-    public Operator(String oper, int precedence, boolean leftAssoc) {
+    Operator(String oper, int precedence, boolean leftAssoc) {
         this.oper = oper;
         this.precedence = precedence;
         this.leftAssoc = leftAssoc;
     }
 
-    public String getOper() {
+    String getOper() {
         return oper;
     }
 
-    public int getPrecedence() {
+    int getPrecedence() {
         return precedence;
     }
 
-    public boolean isLeftAssoc() {
+    boolean isLeftAssoc() {
         return leftAssoc;
     }
 
