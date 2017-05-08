@@ -11,11 +11,10 @@ public class Expression {
     private MathContext mc = null;
     private String expression = null;
     private List<String> rpn = null;
-    private Map<String, Operator> operators = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    private Map<String,LazyFunction> functions = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    private Map<String, BigDecimal> variables = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private Map<String, Operator> operators = new HashMap<>();
+    private Map<String,LazyFunction> functions = new HashMap<>();
+    private Map<String, BigDecimal> variables = new HashMap<>();
     private static final char decimalSeparator = '.';
-    private static final char minusSign = '-';
 
     private static final LazyNumber PARAMS_START = () -> null;
 
@@ -28,132 +27,55 @@ public class Expression {
         this.mc = defaultMathContext;
         this.expression = expression;
 
-        addOperator(new Operator("+", 20, true) {
+        addOperator(new Operator("+", 2, true) {
             @Override
             public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
                 return v1.add(v2, mc);
             }
         });
 
-        addOperator(new Operator("-", 20, true) {
+        addOperator(new Operator("-", 2, true) {
             @Override
             public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
                 return v1.subtract(v2, mc);
             }
         });
 
-        addOperator(new Operator("*", 30, true) {
+        addOperator(new Operator("*", 3, true) {
             @Override
             public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
                 return v1.multiply(v2, mc);
             }
         });
 
-        addOperator(new Operator("/", 30, true) {
+        addOperator(new Operator("/", 3, true) {
             @Override
             public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
                 return v1.divide(v2, mc);
             }
         });
 
-        addOperator(new Operator("%", 30, true) {
+        addOperator(new Operator("%", 3, true) {
             @Override
             public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
                 return v1.remainder(v2, mc);
             }
         });
 
-        addOperator(new Operator("^", 40, false) {
+        addOperator(new Operator("^", 4, false) {
             @Override
             public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
                 double n1 = v1.doubleValue();
                 double n2 = v2.doubleValue();
                 double res = Math.pow(n1,n2);
-                return new BigDecimal(res);
-            }
-        });
-
-        addOperator(new Operator("&&", 4, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                boolean b1 = !v1.equals(BigDecimal.ZERO);
-                boolean b2 = !v2.equals(BigDecimal.ZERO);
-                return b1 && b2 ? BigDecimal.ONE : BigDecimal.ZERO;
-            }
-        });
-
-        addOperator(new Operator("||", 2, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                boolean b1 = !v1.equals(BigDecimal.ZERO);
-                boolean b2 = !v2.equals(BigDecimal.ZERO);
-                return b1 || b2 ? BigDecimal.ONE : BigDecimal.ZERO;
-            }
-        });
-
-        addOperator(new Operator(">", 10, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                return v1.compareTo(v2) == 1 ? BigDecimal.ONE : BigDecimal.ZERO;
-            }
-        });
-
-        addOperator(new Operator(">=", 10, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                return v1.compareTo(v2) >= 0 ? BigDecimal.ONE : BigDecimal.ZERO;
-            }
-        });
-
-        addOperator(new Operator("<", 10, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                return v1.compareTo(v2) == -1 ? BigDecimal.ONE
-                        : BigDecimal.ZERO;
-            }
-        });
-
-        addOperator(new Operator("<=", 10, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                return v1.compareTo(v2) <= 0 ? BigDecimal.ONE : BigDecimal.ZERO;
-            }
-        });
-
-        addOperator(new Operator("=", 7, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                return v1.compareTo(v2) == 0 ? BigDecimal.ONE : BigDecimal.ZERO;
-            }
-        });
-
-        addOperator(new Operator("==", 7, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                return operators.get("=").eval(v1, v2);
-            }
-        });
-
-        addOperator(new Operator("!=", 7, false) {
-            @Override
-            public BigDecimal eval(BigDecimal v1, BigDecimal v2) {
-                return v1.compareTo(v2) != 0 ? BigDecimal.ONE : BigDecimal.ZERO;
-            }
-        });
-
-        addFunction(new Function("NOT") {
-            @Override
-            public BigDecimal eval(List<BigDecimal> parameters) {
-                boolean zero = parameters.get(0).compareTo(BigDecimal.ZERO) == 0;
-                return zero ? BigDecimal.ONE : BigDecimal.ZERO;
+                return new BigDecimal(res,mc);
             }
         });
 
         addFunction(new Function("SIN") {
             @Override
             public BigDecimal eval(List<BigDecimal> parameters) {
-                double d = Math.sin(Math.toRadians(parameters.get(0)
-                        .doubleValue()));
+                double d = Math.sin(Math.toRadians(parameters.get(0).doubleValue()));
                 return new BigDecimal(d, mc);
             }
         });
@@ -161,8 +83,7 @@ public class Expression {
         addFunction(new Function("COS") {
             @Override
             public BigDecimal eval(List<BigDecimal> parameters) {
-                double d = Math.cos(Math.toRadians(parameters.get(0)
-                        .doubleValue()));
+                double d = Math.cos(Math.toRadians(parameters.get(0).doubleValue()));
                 return new BigDecimal(d, mc);
             }
         });
@@ -285,39 +206,14 @@ public class Expression {
         addFunction(new Function("SQRT") {
             @Override
             public BigDecimal eval(List<BigDecimal> parameters) {
-				BigDecimal x = parameters.get(0);
-                if (x.compareTo(BigDecimal.ZERO) == 0) {
-                    return new BigDecimal(0);
-                }
-                if (x.signum() < 0) {
-                    try {
-                        throw new ExpressionException(
-                                "Argument to SQRT() function must not be negative");
-                    } catch (ExpressionException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-                BigInteger n = x.movePointRight(mc.getPrecision() << 1)
-                        .toBigInteger();
-
-                int bits = (n.bitLength() + 1) >> 1;
-                BigInteger ix = n.shiftRight(bits);
-                BigInteger ixPrev;
-
-                do {
-                    ixPrev = ix;
-                    ix = ix.add(n.divide(ix)).shiftRight(1);
-                    Thread.yield();
-                } while (ix.compareTo(ixPrev) != 0);
-
-                return new BigDecimal(ix, mc.getPrecision());
+                double n1 = parameters.get(0).doubleValue();
+                double res = Math.sqrt(n1);
+                return new BigDecimal(res,mc);
             }
         });
 
         variables.put("e", e);
         variables.put("PI", PI);
-        variables.put("TRUE", BigDecimal.ONE);
-        variables.put("FALSE", BigDecimal.ZERO);
 
     }
 
@@ -332,13 +228,14 @@ public class Expression {
     }
 
     private List<String> shuntingYard(String expression) {
+
         List<String> outputQueue = new ArrayList<>();
         Stack<String> stack = new Stack<>();
-
         Tokenizer tokenizer = new Tokenizer(expression, operators);
 
         String lastFunction = null;
         String previousToken = null;
+
         while (tokenizer.hasNext()) {
             String token = tokenizer.next();
             if (isNumber(token)) {

@@ -4,7 +4,7 @@ import java.util.Locale;
 public abstract class LazyFunction {
     private String name;
 
-    public LazyFunction(String name) {
+    LazyFunction(String name) {
         this.name = name.toUpperCase(Locale.ROOT);
     }
 
